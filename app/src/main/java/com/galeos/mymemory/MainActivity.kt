@@ -4,17 +4,20 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.galeos.mymemory.models.BoardSize
 import com.galeos.mymemory.models.MemoryCard
 import com.galeos.mymemory.models.MemoryGame
-import com.galeos.mymemory.utils.DEFAULT_ICONS
 
 class MainActivity : AppCompatActivity() {
     companion object{
         private const val TAG = "MainActivity"
     }
+
+    private lateinit var adapter: MemoryBoardAdapter
+    private lateinit var memoryGame: MemoryGame
 
     // View variables
     private lateinit var rvBoard: RecyclerView
@@ -22,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvNumPairs: TextView
 
     // GAME DIFFICULTY
-    private var boardSize: BoardSize = BoardSize.HARD
+    private var boardSize: BoardSize = BoardSize.EASY
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initializeViews()
 
-        val memoryGame = MemoryGame(boardSize)
+        memoryGame = MemoryGame(boardSize)
         setupRecyclerView(memoryGame.cards)
     }
 
@@ -43,13 +46,31 @@ class MainActivity : AppCompatActivity() {
 
     // Set the Recycler View adapter and layout
     private fun setupRecyclerView(memoryCard:List<MemoryCard>){
-        rvBoard.adapter = MemoryBoardAdapter(this, boardSize,memoryCard,object: MemoryBoardAdapter.CardClickListener{
+        adapter = MemoryBoardAdapter(this, boardSize,memoryCard,object: MemoryBoardAdapter.CardClickListener{
             override fun onCardClicked(position: Int) {
-                Log.i(TAG,"Card clicked $position")
+                updateGameWithFlip(position)
             }
         })
+        rvBoard.adapter = adapter
         rvBoard.setHasFixedSize(true)
         rvBoard.layoutManager = GridLayoutManager(this,boardSize.getWidth())
+    }
+
+    private fun updateGameWithFlip(position: Int) {
+        //Error Checking
+        if(memoryGame.haveWonGame()){
+            Toast.makeText(this,"You already won!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(memoryGame.isCardFaceUp(position)){
+            Toast.makeText(this,"Invalid move!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if(memoryGame.flipCard(position)){
+            Log.i(TAG,"Found a match! Num pairs found: ${memoryGame.numPairsFound}")
+        }
+        memoryGame.flipCard(position)
+        adapter.notifyDataSetChanged()
     }
 
 }

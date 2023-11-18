@@ -1,12 +1,15 @@
 package com.galeos.mymemory
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.cardview.widget.CardView
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.galeos.mymemory.models.BoardSize
 import com.galeos.mymemory.models.MemoryCard
@@ -56,7 +59,12 @@ class MemoryBoardAdapter(
         private val imageButton = itemView.findViewById<ImageButton>(R.id.imageButton)
 
         fun bind(position: Int) {
-            imageButton.setImageResource(if (cards[position].isFaceUp) cards[position].identifier else R.drawable.ic_launcher_background)
+            val memoryCard:MemoryCard = cards[position]
+            imageButton.setImageResource(if (memoryCard.isFaceUp) memoryCard.identifier else R.drawable.ic_launcher_background)
+
+            imageButton.alpha = if(memoryCard.isMatched) .4f else 1.0f
+            val colorStateList:ColorStateList? = if(memoryCard.isMatched) ContextCompat.getColorStateList(context,R.color.black) else null
+            ViewCompat.setBackgroundTintList(imageButton,colorStateList)
             imageButton.setOnClickListener{
                 Log.i(TAG,"Clicked on position $position")
                 cardClickListener.onCardClicked(position)
