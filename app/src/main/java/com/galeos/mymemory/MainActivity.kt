@@ -2,14 +2,19 @@ package com.galeos.mymemory
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.galeos.mymemory.models.BoardSize
 import com.galeos.mymemory.models.MemoryCard
+import com.galeos.mymemory.models.MemoryGame
 import com.galeos.mymemory.utils.DEFAULT_ICONS
 
 class MainActivity : AppCompatActivity() {
+    companion object{
+        private const val TAG = "MainActivity"
+    }
 
     // View variables
     private lateinit var rvBoard: RecyclerView
@@ -24,9 +29,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
-        val randomizedImages = generateRandomizedImages()
-        val memoryCard:List<MemoryCard> = randomizedImages.map{MemoryCard(it)}
-        setupRecyclerView(memoryCard)
+
+        val memoryGame = MemoryGame(boardSize)
+        setupRecyclerView(memoryGame.cards)
     }
 
     // Initialize the views
@@ -38,14 +43,13 @@ class MainActivity : AppCompatActivity() {
 
     // Set the Recycler View adapter and layout
     private fun setupRecyclerView(memoryCard:List<MemoryCard>){
-        rvBoard.adapter = MemoryBoardAdapter(this, boardSize,memoryCard)
+        rvBoard.adapter = MemoryBoardAdapter(this, boardSize,memoryCard,object: MemoryBoardAdapter.CardClickListener{
+            override fun onCardClicked(position: Int) {
+                Log.i(TAG,"Card clicked $position")
+            }
+        })
         rvBoard.setHasFixedSize(true)
         rvBoard.layoutManager = GridLayoutManager(this,boardSize.getWidth())
     }
 
-    // Choose Random Image pairs
-    private fun generateRandomizedImages(): List<Int> {
-        val chosenImages: List<Int> = DEFAULT_ICONS.shuffled().take(boardSize.getNumPairs())
-        return (chosenImages + chosenImages).shuffled()
-    }
 }
