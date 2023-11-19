@@ -3,13 +3,18 @@ package com.galeos.mymemory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.galeos.mymemory.models.BoardSize
 import com.galeos.mymemory.models.MemoryCard
 import com.galeos.mymemory.models.MemoryGame
+import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener
 
 class MainActivity : AppCompatActivity() {
     companion object{
@@ -32,11 +37,60 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initializeViews()
+        setupBoard()
 
-        memoryGame = MemoryGame(boardSize)
-        setupRecyclerView(memoryGame.cards)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.mi_refresh -> {
+                if(memoryGame.getNumMoves() > 0 && !memoryGame.haveWonGame()){
+                    showAlertDialog("Quit your current game?",null,View.OnClickListener {
+                        setupBoard()
+                    })
+                }else{
+                    setupBoard()
+                }
+
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun showAlertDialog(title:String,view: View?, positiveClickListener: View.OnClickListener) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(view)
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("OK") {
+                _,_ -> positiveClickListener.onClick(null)
+            }.show()
+    }
+
+    private fun setupBoard(){
+        memoryGame = MemoryGame(boardSize)
+        setupRecyclerView(memoryGame.cards)
+
+        when(boardSize) {
+            BoardSize.EASY-> {
+                tvNumMoves.text = "Easy: 4x2"
+                tvNumPairs.text = "Pairs: 0 / 4"
+            }
+            BoardSize.MEDIUM-> {
+                tvNumMoves.text = "Medium: 6x3"
+                tvNumPairs.text = "Pairs: 0 / 9"
+            }
+            BoardSize.HARD-> {
+                tvNumMoves.text = "Hard: 6x4"
+                tvNumPairs.text = "Pairs: 0 / 12"
+            }
+        }
+    }
     // Initialize the views
     private fun initializeViews(){
         rvBoard = findViewById(R.id.rvBoard)
