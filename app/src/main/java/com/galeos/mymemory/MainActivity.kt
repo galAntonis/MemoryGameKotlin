@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     // Set the Recycler View adapter and layout
     private fun setupRecyclerView(memoryCard:List<MemoryCard>){
+        Log.i(TAG,"$memoryCard")
         adapter = MemoryBoardAdapter(this, boardSize,memoryCard,object: MemoryBoardAdapter.CardClickListener{
             override fun onCardClicked(position: Int) {
                 updateGameWithFlip(position)
@@ -68,8 +69,14 @@ class MainActivity : AppCompatActivity() {
         }
         if(memoryGame.flipCard(position)){
             Log.i(TAG,"Found a match! Num pairs found: ${memoryGame.numPairsFound}")
+            tvNumPairs.text = "Pairs: ${memoryGame.numPairsFound} / ${boardSize.getNumPairs()}"
+
+            if (memoryGame.haveWonGame()){
+                Toast.makeText(this,"You won! Congratulations!", Toast.LENGTH_SHORT).show()
+            }
         }
-        memoryGame.flipCard(position)
+
+        tvNumMoves.text = "Moves: ${memoryGame.getNumMoves()}"
         adapter.notifyDataSetChanged()
     }
 

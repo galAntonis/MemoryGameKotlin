@@ -1,21 +1,26 @@
 package com.galeos.mymemory.models
 
+import android.util.Log
 import com.galeos.mymemory.utils.DEFAULT_ICONS
 
 class MemoryGame (private val boardSize: BoardSize){
 
+    private val TAG: String = "MemoryGame"
     val cards : List<MemoryCard>
     var numPairsFound = 0
 
+    private var numCardFlips=0
     private var indexOfSingleSelectedCard: Int? = null
 
     init {
         val chosenImages: List<Int> = DEFAULT_ICONS.shuffled().take(boardSize.getNumPairs())
         val randomizedImages = (chosenImages + chosenImages).shuffled()
+        Log.i(TAG,"$randomizedImages")
         cards = randomizedImages.map{MemoryCard(it)}
     }
 
     fun flipCard(position: Int): Boolean {
+        numCardFlips++
         val card: MemoryCard = cards[position]
         var foundMatch = false;
         if(indexOfSingleSelectedCard == null){
@@ -32,6 +37,7 @@ class MemoryGame (private val boardSize: BoardSize){
 
     private fun checkForMatch(position1: Int, position2: Int): Boolean {
         if(cards[position1].identifier!=cards[position2].identifier){
+
             return false
         }
         cards[position1].isMatched = true
@@ -40,7 +46,7 @@ class MemoryGame (private val boardSize: BoardSize){
         return true
     }
 
-    private fun restoreCards() {
+    fun restoreCards() {
         for (card:MemoryCard in cards){
             if(!card.isMatched){
                 card.isFaceUp = false
@@ -54,5 +60,9 @@ class MemoryGame (private val boardSize: BoardSize){
 
     fun haveWonGame(): Boolean {
         return numPairsFound == boardSize.getNumPairs()
+    }
+
+    fun getNumMoves(): Int {
+        return numCardFlips/2
     }
 }
